@@ -28,15 +28,16 @@ __global__ void scan_kernel(const float* input, float* output, int N, float* par
         if(right_idx < BLOCK_DIM){
             input_s[right_idx] += input_s[left_idx];
         }
-        // __syncthreads();     //! 放在这个位置就会有精度误差，why？
+        __syncthreads();     //! 放在这个位置就会有精度误差，why？误差不是次次出现
 
         begin_idx = begin_idx + step;
         step *= 2;
         stride *= 2;
-        __syncthreads();
+        // __syncthreads();
     }
 
     // post reduction
+    //! 要求得是一个完全二叉树
     stride /= 2;
     step /= 2;
     begin_idx = begin_idx - step;
@@ -49,12 +50,12 @@ __global__ void scan_kernel(const float* input, float* output, int N, float* par
         if(right_idx < BLOCK_DIM){
             input_s[right_idx] += input_s[left_idx];
         }
-        // __syncthreads();    //! 放在这个位置就会有精度误差，why？
+        __syncthreads();    //! 放在这个位置就会有精度误差，why？误差不是次次出现
 
         begin_idx = begin_idx - step;
         stride /= 2;
         step /= 2;
-        __syncthreads();
+        // __syncthreads();
     }
 
     // Write results and partial sums
